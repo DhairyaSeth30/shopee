@@ -30,6 +30,8 @@ class ProductNotifier extends StateNotifier<DataState<List<Product>>> {
             .toList();
 
         allProducts = products;
+        // print('All products are ');
+        // print(allProducts);
 
         state = DataState(
             status: DataStatus.success,
@@ -51,12 +53,16 @@ class ProductNotifier extends StateNotifier<DataState<List<Product>>> {
   void searchProducts(String query) {
     if (query.isEmpty) {
       state = DataState(status: DataStatus.success, data: allProducts);
+      // print(state.data);
     } else {
       // Filter based on query
+      // print(query);
       final filtered = allProducts.where((p) {
         return p.name.toLowerCase().contains(query.toLowerCase());
       }).toList();
       state = DataState(status: DataStatus.success, data: filtered);
+      // print('filtered data');
+      // print(filtered);
     }
   }
 
@@ -123,8 +129,15 @@ class ProductNotifier extends StateNotifier<DataState<List<Product>>> {
 
       if (!_isDuplicate(currentProducts, product)) {
         final updatedProducts = [...currentProducts, product];
-        state = DataState(status: DataStatus.success, data: updatedProducts);
-        _saveProducts(updatedProducts);
+
+        // Update both allProducts and state data with the new product
+        allProducts = updatedProducts;
+        state = DataState(status: DataStatus.success, data: allProducts);
+
+        // print('Updated products');
+        // print(allProducts);
+        _saveProducts(allProducts);
+        // _saveProducts(updatedProducts);
       } else {
         state = DataState(status: DataStatus.error, message: 'Duplicate Product');
       }
@@ -135,16 +148,32 @@ class ProductNotifier extends StateNotifier<DataState<List<Product>>> {
 
   // Delete a product
   void deleteProduct(Product product) {
+    // try {
+    //   if (state.data != null) {
+    //     final updatedProducts =
+    //         state.data!.where((p) => p.name != product.name).toList();
+    //     state = DataState(status: DataStatus.success, data: updatedProducts);
+    //     _saveProducts(updatedProducts);
+    //   }
+    // } catch (e) {
+    //   state = DataState(
+    //       status: DataStatus.error, message: 'Failed to delete product');
+    // }
+
     try {
       if (state.data != null) {
-        final updatedProducts =
-            state.data!.where((p) => p.name != product.name).toList();
-        state = DataState(status: DataStatus.success, data: updatedProducts);
-        _saveProducts(updatedProducts);
+        final updatedProducts = allProducts.where((p) => p.name != product.name).toList();
+
+        // Update both allProducts and state
+        allProducts = updatedProducts;
+        state = DataState(status: DataStatus.success, data: allProducts);
+
+        _saveProducts(allProducts);
       }
     } catch (e) {
       state = DataState(
-          status: DataStatus.error, message: 'Failed to delete product');
+          status: DataStatus.error, message: 'Failed to delete product'
+      );
     }
 
     // try {
@@ -181,6 +210,8 @@ class ProductNotifier extends StateNotifier<DataState<List<Product>>> {
               'image': product.imagePath,
             })
         .toList());
+    // print(productList);
     await prefs.setString('products', productList);
   }
+
 }
